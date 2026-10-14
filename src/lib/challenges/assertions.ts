@@ -1,0 +1,261 @@
+// Catálogo dos Desafios de Assertions.
+// Aqui ficam só os textos; os componentes interativos estão em
+// src/components/challenges/assertions.
+import type { Challenge } from "@/lib/challenges/shared";
+
+export const ASSERTION_CHALLENGES: Challenge[] = [
+  {
+    slug: "text",
+    number: 1,
+    title: "Texto exato e texto parcial",
+    level: "easy",
+    summary: "Igualdade, \"contém\", espaços extras, maiúsculas de CSS e valor de campo.",
+    description:
+      "A assertion mais comum e a que mais engana. Texto com espaços a mais, texto que o CSS mostra em maiúsculas e valor de campo (que não é texto) exigem cuidados diferentes.",
+    objectives: [
+      "Valide que o título é exatamente \"Bem-vindo, Maria Souza!\".",
+      "Valide o status do pedido: no HTML ele tem espaços e quebras de linha a mais, mas na tela aparece \"Pedido nº 4821 confirmado\".",
+      "Valide o selo de promoção: na tela está em maiúsculas, mas o texto no HTML é \"Promoção relâmpago\".",
+      "Valide que os termos contêm \"3 dias úteis\" (texto parcial).",
+      "Valide o valor do campo Usuário (\"maria.souza\"): ele é um valor, não um texto.",
+      "Clique em Seguir e valide a troca do texto do botão para \"Seguindo\" e o contador para \"129 seguidores\".",
+      "Digite na bio e valide o contador de caracteres (ex.: \"5/80 caracteres\").",
+    ],
+    hints: [
+      "Exato: `.should(\"have.text\", \"...\")` (Cypress), `toHaveText(\"...\")` (Playwright) ou `assertEquals(\"...\", el.getText())` (Selenium).",
+      "Parcial: `.should(\"contain.text\", \"3 dias úteis\")`, `toContainText(\"3 dias úteis\")` ou `assertTrue(el.getText().contains(\"3 dias úteis\"))`.",
+      "No `#order-status`, o `have.text` do Cypress compara o textContent cru, com os espaços. Use `contain.text` em partes, ou normalize com `.invoke(\"text\").then((t) => t.replace(/\\s+/g, \" \").trim())`. O `toHaveText` do Playwright e o `getText()` do Selenium já normalizam.",
+      "No `#promo-badge` o CSS aplica `text-transform: uppercase`. O `getText()` do Selenium devolve o texto como aparece (maiúsculas); Cypress e Playwright leem o texto do HTML.",
+      "Campo de formulário: `.should(\"have.value\", \"maria.souza\")`, `toHaveValue(\"maria.souza\")` ou `el.getAttribute(\"value\")`.",
+    ],
+    tags: ["texto", "contains", "value"],
+  },
+  {
+    slug: "visibility",
+    number: 2,
+    title: "Visibilidade e existência",
+    level: "medium",
+    summary: "Oculto não é o mesmo que ausente: display, visibility, opacity e fora do DOM.",
+    description:
+      "\"Não aparece na tela\" pode significar várias coisas: o elemento existe mas está oculto por CSS, ou simplesmente não está no DOM. Cada caso pede uma assertion diferente, e os frameworks discordam em alguns deles.",
+    objectives: [
+      "Valide que a caixa \"Sempre visível\" está visível.",
+      "Valide que as caixas ocultas por display, visibility e pelo atributo hidden existem no DOM mas não estão visíveis.",
+      "Valide que a caixa \"Removida do DOM\" não existe; clique em Mostrar e valide que passou a existir.",
+      "Mostre a caixa de display: none e valide que ficou visível; oculte de novo e valide.",
+      "Descubra como o seu framework trata a caixa com opacity: 0.",
+      "Valide que o texto só para leitores de tela existe, embora não apareça.",
+    ],
+    hints: [
+      "Existe mas está oculto: `.should(\"exist\").and(\"not.be.visible\")` (Cypress), `toBeAttached()` + `toBeHidden()` (Playwright), `assertFalse(el.isDisplayed())` (Selenium).",
+      "Não existe: `.should(\"not.exist\")`, `toHaveCount(0)` ou `driver.findElements(By.id(\"box-removed\")).isEmpty()`. No Selenium, `findElement` em algo ausente lança NoSuchElementException.",
+      "Cuidado: `toBeHidden()` do Playwright passa tanto para elemento oculto quanto para elemento ausente. Para diferenciar, combine com `toBeAttached()` ou `toHaveCount()`.",
+      "Opacity 0: o Cypress considera não visível; Playwright e Selenium consideram visível, porque o elemento ocupa espaço e pode receber clique.",
+      "Cada caixa tem `data-hidden-by` com a técnica usada, e cada botão alterna entre \"Mostrar\" e \"Ocultar\".",
+    ],
+    tags: ["visível", "existe", "display", "DOM"],
+  },
+  {
+    slug: "state",
+    number: 3,
+    title: "Estado: habilitado, marcado e selecionado",
+    level: "easy",
+    summary: "Disabled, readonly, checked, opção selecionada e aba ativa.",
+    description:
+      "Validar o estado dos controles antes e depois de uma ação: habilitado ou desabilitado, somente leitura, marcado, opção selecionada em um select e item selecionado em um componente com ARIA.",
+    objectives: [
+      "Valide o estado inicial: \"Lembrar de mim\" marcado, \"Receber novidades\" desmarcado, frequência \"Semanal\" e idioma \"Português (Brasil)\".",
+      "Valide que o campo \"Código da conta\" é somente leitura e que o botão Salvar começa desabilitado.",
+      "Altere o nome de exibição e valide que Salvar habilitou.",
+      "Clique em \"Bloquear formulário\" e valide que todos os controles ficaram desabilitados.",
+      "Selecione a aba \"Segurança\" e valide aria-selected nas três abas.",
+    ],
+    hints: [
+      "Habilitado: `be.enabled` e `be.disabled` (Cypress), `toBeEnabled()` e `toBeDisabled()` (Playwright), `isEnabled()` (Selenium).",
+      "Marcado: `be.checked`, `toBeChecked()`, `isSelected()`. Para rádio, valide o marcado e também que os outros não estão.",
+      "Opção do select: `.should(\"have.value\", \"pt-BR\")`, `toHaveValue(\"pt-BR\")` ou `new Select(el).getFirstSelectedOption().getText()`.",
+      "Somente leitura: `.should(\"have.attr\", \"readonly\")`, `toHaveAttribute(\"readonly\", \"\")` ou `not.toBeEditable()`. Readonly não é disabled: `isEnabled()` devolve true.",
+      "Abas: `[role=\"tab\"]` com `aria-selected=\"true\"` ou `\"false\"`. O botão de bloqueio expõe `aria-pressed`.",
+    ],
+    tags: ["disabled", "checked", "selected", "readonly"],
+  },
+  {
+    slug: "attributes-and-classes",
+    number: 4,
+    title: "Atributos e classes CSS",
+    level: "medium",
+    summary: "Classe de erro, borda vermelha, href, alt, aria-valuenow e data-*.",
+    description:
+      "Nem tudo que importa é texto. Aqui você valida classes, estilos calculados e atributos: o campo que ganha a classe de erro e a borda vermelha, o destino de um link, o texto alternativo de uma imagem e o progresso de uma barra.",
+    objectives: [
+      "Clique em Validar com o e-mail vazio e valide: classe \"input-error\", aria-invalid=\"true\" e borda rgb(220, 38, 38).",
+      "Digite um e-mail válido, valide de novo e confira a classe \"input-success\" e a borda rgb(22, 163, 74).",
+      "Valide os atributos href, target e rel do link da documentação.",
+      "Valide o alt, a largura e a altura da imagem de perfil.",
+      "Avance o progresso até 100% validando aria-valuenow, a largura da barra e a classe \"progress-complete\" no final.",
+      "Aprove o pedido e valide a troca da classe \"badge-pending\" por \"badge-approved\" e do atributo data-status.",
+    ],
+    hints: [
+      "Classe: `.should(\"have.class\", \"input-error\")`, `toHaveClass(/input-error/)` ou `el.getAttribute(\"class\").contains(\"input-error\")`. Com várias classes, não compare a string inteira.",
+      "Atributo: `.should(\"have.attr\", \"href\", \"...\")`, `toHaveAttribute(\"href\", \"...\")` ou `el.getAttribute(\"href\")`. No Selenium, `getAttribute(\"href\")` devolve a URL absoluta; use `getDomAttribute` para o valor do HTML.",
+      "Estilo calculado: `.should(\"have.css\", \"border-color\", \"rgb(220, 38, 38)\")`, `toHaveCSS(\"border-color\", \"rgb(220, 38, 38)\")` ou `el.getCssValue(\"border-color\")` (o Selenium pode devolver em rgba).",
+      "As cores são fixas e iguais nos temas claro e escuro: erro `rgb(220, 38, 38)` e sucesso `rgb(22, 163, 74)`.",
+      "A barra é `#upload-progress` (`role=\"progressbar\"`), e a parte preenchida é `#upload-progress-fill`, com a largura em `style`.",
+    ],
+    tags: ["atributos", "classes", "css", "aria"],
+  },
+  {
+    slug: "url-and-title",
+    number: 5,
+    title: "URL e título após navegação",
+    level: "medium",
+    summary: "Validar para onde a navegação levou: caminho, query string, hash e título.",
+    description:
+      "Depois de clicar em um link, a primeira coisa a validar é se você chegou ao lugar certo. Esta mini loja muda a query string, o hash e o título da aba a cada navegação, e tem até um redirecionamento.",
+    objectives: [
+      "Valide o título inicial: \"Início | Loja Demo · LocatorLab\".",
+      "Clique em \"Meus pedidos\" e valide que a URL contém \"section=pedidos\" e que o título virou \"Meus pedidos | Loja Demo · LocatorLab\".",
+      "Clique em \"Ver detalhes do pedido 4821\" e valide os parâmetros section e pedido e o hash \"#detalhes\".",
+      "Volte para \"Início\" e clique em \"Ir para pagamento\": você é redirecionado para o login. Valide a URL (section=login e from=pagamento) e o título \"Entrar | Loja Demo · LocatorLab\".",
+      "Use o botão Voltar e valide que retornou à URL anterior.",
+    ],
+    hints: [
+      "URL: `cy.url().should(\"include\", \"section=pedidos\")`, `await expect(page).toHaveURL(/section=pedidos/)` ou `driver.getCurrentUrl()`.",
+      "Título: `cy.title().should(\"eq\", \"...\")`, `await expect(page).toHaveTitle(\"...\")` ou `driver.getTitle()`.",
+      "Prefira validar partes da URL (caminho, parâmetro) em vez da URL inteira, que muda entre localhost e produção. No Cypress: `cy.location(\"search\")`, `cy.location(\"hash\")` e `cy.location(\"pathname\")`.",
+      "A navegação é assíncrona: no Selenium use `new WebDriverWait(driver, Duration.ofSeconds(5)).until(ExpectedConditions.urlContains(\"section=pedidos\"))` e `titleIs(...)`.",
+      "O caminho atual também aparece em `#current-location` e a seção em `#section-title`.",
+    ],
+    tags: ["url", "título", "query string", "hash"],
+  },
+  {
+    slug: "list-count",
+    number: 6,
+    title: "Quantidade de itens após filtro",
+    level: "easy",
+    summary: "12 produtos, três filtros combináveis e um contador para conferir.",
+    description:
+      "Contar elementos é a forma de provar que um filtro funcionou. Aqui a lista tem 12 produtos e três filtros que se combinam: categoria, busca por nome e somente em estoque.",
+    objectives: [
+      "Valide que a lista começa com 12 itens e o texto \"Mostrando 12 de 12 produtos\".",
+      "Filtre por \"Periféricos\" e valide 5 itens.",
+      "Marque \"Somente em estoque\" (ainda em Periféricos) e valide 4 itens.",
+      "Volte para \"Todos\", desmarque o estoque, busque por \"mouse\" e valide 3 itens.",
+      "Busque por \"xyz\" e valide que a lista ficou vazia e a mensagem de nenhum resultado apareceu.",
+      "Valide também que todos os itens exibidos pertencem à categoria filtrada.",
+    ],
+    hints: [
+      "Contar: `cy.get(\"#product-list li\").should(\"have.length\", 5)`, `await expect(page.locator(\"#product-list li\")).toHaveCount(5)` ou `driver.findElements(...).size()`.",
+      "Valide o número de elementos e também o texto do contador (`#results-count`): um pode estar certo e o outro errado.",
+      "Cada item tem `data-category` e `data-in-stock`. Para provar o filtro: nenhum item com categoria diferente, por exemplo `#product-list li:not([data-category=\"perifericos\"])` com contagem 0.",
+      "Lista vazia: o `ul` continua existindo sem filhos e aparece `#no-results`.",
+    ],
+    tags: ["contagem", "filtro", "lista"],
+  },
+  {
+    slug: "cart-totals",
+    number: 7,
+    title: "Valores calculados: carrinho de compras",
+    level: "hard",
+    summary: "Subtotal, quantidade, cupom de desconto, frete grátis e total.",
+    description:
+      "Um carrinho com regras de negócio: subtotal por item, cupom de 10%, frete fixo que fica grátis acima de um valor e total. Os valores são sempre os mesmos, então dá para validar cada centavo.",
+    objectives: [
+      "Valide o estado inicial: 3 itens, subtotal R$ 379,70, frete R$ 20,00 e total R$ 399,70.",
+      "Aplique o cupom QA10 e valide desconto de R$ 37,97 e total de R$ 361,73.",
+      "Remova o cupom, aumente o Teclado mecânico para 2 unidades e valide: subtotal R$ 629,60, frete grátis e total R$ 629,60.",
+      "Com 2 teclados, aplique QA10 de novo e valide desconto de R$ 62,96 e total de R$ 566,64.",
+      "Aplique um cupom inexistente e valide a mensagem de erro.",
+      "Remova todos os itens e valide o carrinho vazio com total R$ 0,00.",
+    ],
+    hints: [
+      "Regras: frete de R$ 20,00, grátis quando o subtotal é de R$ 500,00 ou mais; cupom QA10 dá 10% sobre o subtotal; cupom FRETEGRATIS zera o frete; só um cupom por vez.",
+      "Total = subtotal − desconto + frete. Calcule o valor esperado no teste em vez de só copiar o número da tela.",
+      "Para comparar números, converta o texto: tire \"R$\", os pontos de milhar e troque a vírgula por ponto. Os valores também estão em centavos no atributo `data-cents`.",
+      "Elementos: `#cart-count`, `#cart-subtotal`, `#cart-discount`, `#cart-shipping`, `#cart-total`, `#coupon-input`, `#apply-coupon`, `#coupon-message` e `#remove-coupon`.",
+      "Cada linha é `#cart-item-keyboard`, `#cart-item-mouse` ou `#cart-item-mousepad`, com `.item-quantity`, `.item-subtotal` e botões com aria-label (\"Aumentar quantidade de Teclado mecânico\").",
+    ],
+    tags: ["cálculo", "valores", "cupom", "regra de negócio"],
+  },
+  {
+    slug: "form-validation",
+    number: 8,
+    title: "Mensagens de validação de formulário",
+    level: "medium",
+    summary: "Cada campo tem mais de uma mensagem de erro possível.",
+    description:
+      "Um formulário de cadastro com várias regras por campo. O teste precisa provocar cada erro e validar a mensagem certa, no campo certo, além do resumo com a quantidade de erros.",
+    objectives: [
+      "Envie o formulário vazio e valide as 6 mensagens e o resumo \"Corrija 6 campos para continuar.\".",
+      "Nome com 2 letras: \"O nome deve ter pelo menos 3 caracteres.\".",
+      "E-mail \"maria@\": \"E-mail inválido.\".",
+      "Idade 17: \"Você deve ter pelo menos 18 anos.\".",
+      "Senha \"abcdefgh\": \"A senha deve conter pelo menos um número.\"; confirmação diferente: \"As senhas não coincidem.\".",
+      "Corrija um campo e valide que só a mensagem dele sumiu e que o resumo diminuiu.",
+      "Preencha tudo corretamente e valide a mensagem de sucesso com o nome.",
+    ],
+    hints: [
+      "Cada mensagem tem id previsível: `#name-error`, `#email-error`, `#age-error`, `#password-error`, `#confirm-password-error` e `#terms-error`, todas com `role=\"alert\"`.",
+      "Valide também a ausência: depois de corrigir, a mensagem sai do DOM (`not.exist`, `toHaveCount(0)`).",
+      "O campo com erro recebe `aria-invalid=\"true\"` e `aria-describedby` apontando para a mensagem.",
+      "O formulário usa `novalidate`: as mensagens são da aplicação, não os balões nativos do navegador.",
+      "A validação só começa no primeiro envio; depois disso, as mensagens se atualizam enquanto você digita. O resumo é `#form-summary` e o sucesso é `#form-success`.",
+    ],
+    tags: ["validação", "mensagens", "formulário"],
+  },
+  {
+    slug: "sorting",
+    number: 9,
+    title: "Ordenação: alfabética e por data",
+    level: "hard",
+    summary: "Nomes com acento e datas em dd/mm/aaaa: comparar texto não basta.",
+    description:
+      "Para validar uma ordenação, o teste lê todos os itens e confere a sequência. As armadilhas estão nos dados: nomes com acento (Álvaro, Érica) e datas no formato brasileiro, que não podem ser comparadas como texto.",
+    objectives: [
+      "Ordene por \"Nome (A–Z)\" e valide a sequência dos 8 nomes: começa com Álvaro Dias e termina com Zélia Rocha.",
+      "Ordene por \"Nome (Z–A)\" e valide que é o inverso.",
+      "Ordene por \"Data (mais recente)\" e valide que a primeira é 01/10/2024 e a última é 25/12/2021.",
+      "Ordene por \"Data (mais antiga)\" e valide a sequência completa das datas.",
+      "Escreva uma validação genérica: leia a lista, ordene uma cópia no teste e compare com o que está na tela.",
+    ],
+    hints: [
+      "Leia todos os textos: `cy.get(\".customer-name\").then(($els) => [...$els].map((el) => el.innerText))`, `await page.locator(\".customer-name\").allInnerTexts()` ou um `stream().map(WebElement::getText)` no Selenium.",
+      "Ordene a cópia com suporte a acentos: `[...nomes].sort((a, b) => a.localeCompare(b, \"pt-BR\"))`. O `.sort()` puro coloca Álvaro e Érica depois de Zélia.",
+      "Datas: não compare \"15/03/2024\" como texto. Cada data é um `<time>` com o atributo `datetime` em formato ISO (`2024-03-15`), que pode ser comparado como string ou convertido em Date.",
+      "Ordem alfabética esperada: Álvaro Dias, Bruno Alves, Carla Mendes, Daniel Costa, Érica Santos, Fábio Lima, Helena Prado, Zélia Rocha.",
+      "A lista (`#customer-list`) expõe `data-sort` com o critério atual, e `#sort-status` mostra o critério em texto.",
+    ],
+    tags: ["ordenação", "datas", "acentos", "listas"],
+  },
+  {
+    slug: "api-responses",
+    number: 10,
+    title: "Respostas de API",
+    level: "hard",
+    summary: "Status code, corpo e headers dos endpoints do próprio LocatorLab.",
+    description:
+      "Testes de API validam três coisas: o status code, o corpo da resposta e os headers. Esta página lista os cenários da API do LocatorLab e o que validar em cada um. O console abaixo executa os cenários que não alteram dados, para você ver a resposta antes de escrever o teste.",
+    objectives: [
+      "Login com senha errada: status 401, success false e error.code \"INVALID_CREDENTIALS\".",
+      "Listagem sem autenticação (fora do navegador, sem cookie): status 401 e error.code \"UNAUTHORIZED\".",
+      "Listagem com pageSize=3: status 200, 3 itens em data e meta com page, pageSize, total e totalPages.",
+      "Tarefa por id: status 200 e os campos id, title, status, priority e owner. Id inexistente: 404 com \"NOT_FOUND\".",
+      "Criação com título vazio: status 400, \"VALIDATION_ERROR\" e error.details com o campo title.",
+      "No seu framework: crie uma tarefa (201), altere com PATCH (200) e exclua (204, sem corpo).",
+      "Em todas as respostas com corpo, valide o header content-type contendo \"application/json\".",
+    ],
+    hints: [
+      "Cypress: `cy.request({ method: \"POST\", url: \"/api/v1/auth/login\", body: {...}, failOnStatusCode: false }).then((res) => { expect(res.status).to.eq(401); expect(res.body.error.code).to.eq(\"INVALID_CREDENTIALS\"); })`.",
+      "Playwright: `const res = await request.post(\"/api/v1/auth/login\", { data: {...} }); expect(res.status()).toBe(401); expect((await res.json()).success).toBe(false);`.",
+      "Java: com RestAssured, `given().contentType(\"application/json\").body(...).when().post(\"/api/v1/auth/login\").then().statusCode(401).body(\"error.code\", equalTo(\"INVALID_CREDENTIALS\"))`.",
+      "Autenticação: faça login, guarde `data.token` e envie `Authorization: Bearer <token>` nas outras chamadas. O console desta página usa o cookie da sua sessão.",
+      "Headers: `expect(res.headers[\"content-type\"]).to.include(\"application/json\")` (Cypress) ou `res.headers()[\"content-type\"]` (Playwright). Nomes de header não diferenciam maiúsculas.",
+      "Para o teste ser reproduzível, restaure o banco antes da suíte com `POST /api/v1/reset` (veja o README). A tarefa 25 pertence ao admin: para o aluno, a resposta é 403.",
+    ],
+    tags: ["api", "status code", "json", "headers"],
+  },
+];
+
+export function getAssertionChallenge(slug: string) {
+  return ASSERTION_CHALLENGES.find((challenge) => challenge.slug === slug);
+}

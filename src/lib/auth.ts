@@ -8,8 +8,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   logger: {
     // Senha errada é um caso esperado nas aulas; não precisa virar erro no log.
+    // Compara o campo "type": o nome da classe é minificado no build.
     error(error) {
-      if (error.name === "CredentialsSignin") return;
+      if ("type" in error && error.type === "CredentialsSignin") return;
       console.error("[auth]", error);
     },
   },

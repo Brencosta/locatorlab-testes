@@ -1,36 +1,9 @@
 // Catálogo dos Desafios de Localizadores.
 // Aqui ficam só os textos; os componentes interativos estão em
 // src/components/challenges/locators.
+import type { Challenge } from "@/lib/challenges/shared";
 
-export const CHALLENGE_LEVELS = ["easy", "medium", "hard"] as const;
-export type ChallengeLevel = (typeof CHALLENGE_LEVELS)[number];
-
-export const LEVEL_LABELS: Record<ChallengeLevel, string> = {
-  easy: "Fácil",
-  medium: "Médio",
-  hard: "Difícil",
-};
-
-export type LocatorChallenge = {
-  slug: string;
-  number: number;
-  title: string;
-  level: ChallengeLevel;
-  /** Frase curta exibida no catálogo. */
-  summary: string;
-  /** Explicação exibida na página do desafio. */
-  description: string;
-  /** O que o aluno deve localizar e fazer. */
-  objectives: string[];
-  /** Conteúdo do bloco "Dica". Trechos entre crases viram <code>. */
-  hints: string[];
-  tags: string[];
-  /**
-   * Desafios sobre ausência de id/data-testid: a área de prática não recebe
-   * nenhum desses atributos, nem no contêiner.
-   */
-  bare?: boolean;
-};
+export type LocatorChallenge = Challenge;
 
 export const LOCATOR_CHALLENGES: LocatorChallenge[] = [
   {

@@ -2,25 +2,39 @@
 
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
+import { BugProvider } from "@/components/bugs/bug-context";
+import { ASSERTION_CHALLENGE_COMPONENTS } from "@/components/challenges/assertions";
 import { LOCATOR_CHALLENGE_COMPONENTS } from "@/components/challenges/locators";
+import type { BugId } from "@/lib/bugs/registry";
+import type { ChallengeArea } from "@/lib/challenges/shared";
+
+const COMPONENTS = {
+  locators: LOCATOR_CHALLENGE_COMPONENTS,
+  assertions: ASSERTION_CHALLENGE_COMPONENTS,
+} satisfies Record<ChallengeArea, unknown>;
 
 /**
  * Área de prática: mostra o componente interativo do desafio e um botão que
  * o devolve ao estado inicial.
  */
 export function ChallengeStage({
+  area,
   slug,
   bare,
   nonce,
+  bugs,
 }: {
+  area: ChallengeArea;
   slug: string;
   /** Desafio sem id/data-testid: o contêiner também não recebe esses atributos. */
   bare: boolean;
   /** Valor gerado no servidor a cada carregamento (usado nos IDs dinâmicos). */
   nonce: string;
+  /** Bugs do Modo Bug em vigor (lista vazia quando o modo está desligado). */
+  bugs: readonly BugId[];
 }) {
   const [run, setRun] = useState({ key: 0, nonce });
-  const Challenge = LOCATOR_CHALLENGE_COMPONENTS[slug];
+  const Challenge = COMPONENTS[area][slug];
 
   function restart() {
     setRun((current) => ({
@@ -48,7 +62,9 @@ export function ChallengeStage({
         </button>
       </div>
       <div className="p-4">
-        {Challenge ? <Challenge key={run.key} nonce={run.nonce} /> : null}
+        <BugProvider bugs={bugs}>
+          {Challenge ? <Challenge key={run.key} nonce={run.nonce} /> : null}
+        </BugProvider>
       </div>
     </section>
   );

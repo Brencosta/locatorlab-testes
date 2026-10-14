@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { LEVEL_LABELS, type ChallengeLevel } from "@/lib/challenges/locators";
+import { LEVEL_LABELS, type ChallengeLevel } from "@/lib/challenges/shared";
 import { cn } from "@/lib/utils";
 
 const LEVEL_STYLES: Record<ChallengeLevel, string> = {

@@ -113,8 +113,12 @@ function buildUsers(): Prisma.UserCreateManyInput[] {
 }
 
 /**
- * Apaga todos os dados e recria os registros do seed.
+ * Apaga usuários e tarefas e recria os registros do seed.
  * Os IDs das tarefas voltam a começar em 1 (RESTART IDENTITY).
+ *
+ * A tabela Setting (Modo Bug) fica de fora de propósito: as suítes dos alunos
+ * costumam chamar o reset antes de cada execução, e isso não pode desligar o
+ * Modo Bug que o professor acabou de ligar.
  */
 export async function resetDatabase(prisma: PrismaClient) {
   const users = buildUsers();

@@ -57,10 +57,14 @@ export function noContent() {
 }
 
 export function validationError(error: ZodError) {
-  const details = error.issues.map((issue) => ({
-    field: issue.path.join(".") || "body",
-    message: issue.message,
-  }));
+  // Um erro por campo: a primeira regra que falhou.
+  const details: ApiErrorDetail[] = [];
+  for (const issue of error.issues) {
+    const field = issue.path.join(".") || "body";
+    if (!details.some((detail) => detail.field === field)) {
+      details.push({ field, message: issue.message });
+    }
+  }
   return fail(400, "VALIDATION_ERROR", "Dados inválidos.", details);
 }
 

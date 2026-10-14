@@ -1,4 +1,5 @@
 import { jwtVerify, SignJWT } from "jose";
+import { forbidden, unauthorized } from "@/lib/api-response";
 import { getCurrentUser } from "@/lib/session";
 import { getUserById, type AppUser } from "@/lib/users";
 
@@ -46,4 +47,22 @@ export async function getApiUser(request: Request): Promise<AppUser | null> {
   }
 
   return getCurrentUser();
+}
+
+/**
+ * Exige um admin autenticado nas rotas /api/v1/admin.
+ * Sem credenciais: 401. Autenticado mas sem ser admin: 403.
+ */
+export async function requireApiAdmin(
+  request: Request,
+): Promise<{ ok: true; user: AppUser } | { ok: false; response: Response }> {
+  const user = await getApiUser(request);
+  if (!user) return { ok: false, response: unauthorized() };
+  if (user.role !== "ADMIN") {
+    return {
+      ok: false,
+      response: forbidden("Acesso restrito a administradores."),
+    };
+  }
+  return { ok: true, user };
 }

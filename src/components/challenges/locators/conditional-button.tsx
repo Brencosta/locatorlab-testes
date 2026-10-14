@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Circle } from "lucide-react";
+import { useBug } from "@/components/bugs/bug-context";
 import { Panel, Result, ui } from "@/components/challenges/ui";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,11 +26,14 @@ export function ConditionalButtonChallenge() {
     { key: "terms", label: "Termos aceitos", valid: terms },
   ];
   const formValid = requirements.every((item) => item.valid);
+  // Modo Bug: o botão fica habilitado e o envio não confere a validação.
+  const skipValidation = useBug("button-always-enabled");
+  const canSubmit = formValid || skipValidation;
   const confirmValid = confirmText === CONFIRM_WORD;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (formValid) setCreated(name.trim());
+    if (canSubmit) setCreated(name.trim() || "usuário sem nome");
   }
 
   return (
@@ -123,7 +127,7 @@ export function ConditionalButtonChallenge() {
               id="create-account"
               type="submit"
               className={`${ui.button} ${ui.primary}`}
-              disabled={!formValid}
+              disabled={!canSubmit}
             >
               Criar conta
             </button>

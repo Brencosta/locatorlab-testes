@@ -36,3 +36,8 @@ export const UNEXPECTED_ERROR: ActionResult = {
   success: false,
   message: "Algo deu errado. Tente novamente.",
 };
+
+export const ADMIN_ONLY: ActionResult = {
+  success: false,
+  message: "Acesso restrito a administradores.",
+};

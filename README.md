@@ -5,12 +5,16 @@ Ambiente de prática para aulas de automação de testes. Os alunos treinam
 **assertions** (texto, visibilidade, estado, atributos, URL, quantidade de itens,
 respostas de API) usando Selenium, Cypress e Playwright.
 
-Etapas concluídas (2 de 5):
+Etapas concluídas (4 de 5):
 
 1. Autenticação, dashboard, CRUD de tarefas, perfil, papéis, API REST, reset do
    banco e layout base.
 2. Desafios de Localizadores: catálogo com filtro por nível e 19 desafios
    interativos.
+3. Desafios de Assertions: catálogo com filtro por nível e 10 desafios
+   interativos, incluindo um console para as respostas da API.
+4. Painel do professor (somente admin) e Modo Bug: seis defeitos propositais
+   que o professor liga para os alunos verem seus testes falharem.
 
 ## Credenciais de teste
 
@@ -141,8 +145,8 @@ migrations novas automaticamente.
 
 ## Reset do banco
 
-`POST /api/v1/reset` apaga todos os dados (inclusive contas criadas pelos alunos
-e avatares) e recria exatamente os registros do seed, com os IDs das tarefas
+`POST /api/v1/reset` apaga usuários e tarefas (inclusive contas criadas pelos
+alunos e avatares) e recria exatamente os registros do seed, com os IDs das tarefas
 voltando a começar em 1. Use antes de cada aula ou no `before` da suíte de
 testes.
 
@@ -172,7 +176,8 @@ Base: `/api/v1`. Todas as respostas seguem o mesmo formato:
 }
 ```
 
-`meta` só aparece em listagens e `details` só em erros de validação.
+`meta` só aparece em listagens e `details` só em erros de validação, com um item por campo (a primeira regra que
+falhou).
 
 | Método e rota                 | Autenticação         | Status possíveis             |
 | ----------------------------- | -------------------- | ---------------------------- |
@@ -292,8 +297,115 @@ Duas páginas auxiliares ficam em `/embed` (sem menu, mas exigem login):
 página aberta em outra aba pelo desafio 18.
 
 Para criar um desafio novo: adicione os textos em
-`src/lib/challenges/locators.ts`, crie o componente em
-`src/components/challenges/locators/` e registre-o no `index.ts` da mesma pasta.
+`src/lib/challenges/locators.ts` (ou `assertions.ts`), crie o componente em
+`src/components/challenges/locators/` (ou `assertions/`) e registre-o no
+`index.ts` da mesma pasta.
+
+## Desafios de Assertions
+
+O catálogo fica em `/challenges/assertions` e funciona como o de localizadores:
+filtro `?level=`, uma página por desafio em `/challenges/assertions/{slug}`,
+lista "O que validar", área de prática, "Reiniciar desafio" e "Dica" recolhível.
+
+| Nº | Slug                     | Desafio                                   | Nível   |
+| -- | ------------------------ | ----------------------------------------- | ------- |
+| 1  | `text`                   | Texto exato e texto parcial               | Fácil   |
+| 2  | `visibility`             | Visibilidade e existência                 | Médio   |
+| 3  | `state`                  | Estado: habilitado, marcado e selecionado | Fácil   |
+| 4  | `attributes-and-classes` | Atributos e classes CSS                   | Médio   |
+| 5  | `url-and-title`          | URL e título após navegação               | Médio   |
+| 6  | `list-count`             | Quantidade de itens após filtro           | Fácil   |
+| 7  | `cart-totals`            | Valores calculados: carrinho de compras   | Difícil |
+| 8  | `form-validation`        | Mensagens de validação de formulário      | Médio   |
+| 9  | `sorting`                | Ordenação: alfabética e por data          | Difícil |
+| 10 | `api-responses`          | Respostas de API                          | Difícil |
+
+Valores fixos que os testes podem esperar:
+
+- **Carrinho (7):** começa com 3 itens, subtotal R$ 379,70, frete R$ 20,00 e
+  total R$ 399,70. Frete grátis a partir de R$ 500,00 em produtos. Cupons:
+  `QA10` (10% sobre o subtotal) e `FRETEGRATIS`. Os valores são escritos como
+  "R$ 1.234,56", com espaço comum, e também ficam em centavos em `data-cents`.
+- **Atributos (4):** borda de erro `rgb(220, 38, 38)` e de sucesso
+  `rgb(22, 163, 74)`, iguais nos temas claro e escuro e sem transição.
+- **Contagem (6):** 12 produtos (5 periféricos, 3 de áudio, 2 monitores e
+  2 acessórios), 9 em estoque.
+- **Ordenação (9):** 8 clientes; a ordem alfabética começa em "Álvaro Dias" e
+  termina em "Zélia Rocha". Cada data tem o valor ISO no atributo `datetime`.
+- **URL e título (5):** o título da aba é "{seção} | Loja Demo · LocatorLab",
+  com as seções `pedidos`, `perfil` e `login` no parâmetro `?section=`.
+- **API (10):** o console só executa cenários que não alteram dados, usando o
+  cookie da sessão. Os resultados que dependem dos dados (como o total de
+  tarefas) supõem o banco restaurado pelo reset.
+
+Nenhum desafio grava nada: recarregar ou reiniciar volta ao estado inicial.
+
+## Painel do professor
+
+Fica em `/admin` e só abre para usuários com papel admin. Tem três partes:
+
+- **Usuários cadastrados:** nome, e-mail, papel, quantidade de tarefas e data de
+  cadastro.
+- **Restaurar banco de dados:** o mesmo efeito do endpoint de reset, com uma
+  confirmação antes.
+- **Modo Bug:** um interruptor e a lista dos defeitos que ele ativa, com link
+  para a tela onde cada um aparece.
+
+A permissão é conferida no servidor em três lugares: na página (quem não é
+admin recebe "Acesso negado" e nenhum dado do painel é consultado), em cada
+Server Action do painel e nas rotas `/api/v1/admin/*`.
+
+| Método e rota                 | Corpo                   | Respostas          |
+| ----------------------------- | ----------------------- | ------------------ |
+| `GET /api/v1/admin/users`     | —                       | 200, 401, 403      |
+| `GET /api/v1/admin/bug-mode`  | —                       | 200, 401, 403      |
+| `PUT /api/v1/admin/bug-mode`  | `{ "enabled": true }`   | 200, 400, 401, 403 |
+
+Sem login a resposta é 401; logado como aluno, 403.
+
+## Modo Bug
+
+Quando o admin liga o Modo Bug, a aplicação passa a ter seis defeitos
+propositais, para **todos** os usuários. A configuração fica no banco (tabela
+`Setting`, chave `bugMode`).
+
+| Nº | Id                        | Onde                                  | O que acontece                                                        |
+| -- | ------------------------- | ------------------------------------- | --------------------------------------------------------------------- |
+| 1  | `task-save-not-persisted` | Tarefas › Editar                      | O aviso de sucesso aparece, mas a alteração não é gravada             |
+| 2  | `cart-total`              | Assertions › Carrinho                 | O total não soma o frete (R$ 379,70 em vez de R$ 399,70)              |
+| 3  | `success-typo`            | Tarefas › Nova tarefa                 | O aviso diz "Tarefa criada com suceso."                               |
+| 4  | `deleted-item-stays`      | Tarefas › Excluir                     | A tarefa é apagada, mas a linha fica na lista até recarregar a página |
+| 5  | `filter-extra-item`       | Assertions › Quantidade após filtro   | O filtro por categoria traz um item de outra ("Periféricos" mostra 6) |
+| 6  | `button-always-enabled`   | Localizadores › Botão condicional     | "Criar conta" fica habilitado e cria a conta sem validar              |
+
+O que vale saber:
+
+- **O aluno não vê nenhum aviso.** Só o admin vê o selo "Modo Bug ativo" no topo
+  e o estado no painel. Para o aluno, `GET /api/v1/admin/bug-mode` responde 403.
+- **Vale a partir do próximo carregamento de página.** Quem já está com uma tela
+  aberta só passa a ver (ou deixa de ver) os bugs dos desafios ao recarregar ou
+  navegar.
+- **O reset não desliga o Modo Bug.** Nem o botão do painel nem
+  `POST /api/v1/reset` mexem nessa configuração, para que a suíte do aluno, que
+  costuma chamar o reset no início, não desfaça o que o professor ligou.
+- **A API REST de tarefas não tem bugs.** Os defeitos 1, 3 e 4 afetam só a
+  interface; `/api/v1/tasks` continua correta e pode ser usada para preparar e
+  conferir dados nos testes.
+
+### Como os bugs estão organizados
+
+Tudo parte de `src/lib/bugs/registry.ts`, que lista os bugs (id, título,
+descrição, onde aparece e a chave `enabled`). O código de cada defeito consulta
+essa lista pelo id:
+
+- no servidor: `await isBugActive("id")`, de `src/lib/bugs/server.ts`;
+- em componente cliente de um desafio: `useBug("id")`, de
+  `src/components/bugs/bug-context.tsx`.
+
+Para **adicionar** um bug, inclua uma entrada no registro e consulte o id no
+ponto do código onde o defeito deve acontecer; ele aparece sozinho no painel.
+Para **desligar** um bug sem apagar o código, troque `enabled` para `false` no
+registro. Para **achar** onde um bug é aplicado, busque pelo id no projeto.
 
 ## Convenção de data-testid
 
@@ -325,11 +437,14 @@ src/app/(auth)/       login e cadastro
 src/app/(app)/        área logada: dashboard, tarefas, perfil, desafios e páginas "em breve"
 src/app/embed/        páginas auxiliares dos desafios (iframe e nova aba)
 src/app/api/v1/       API REST
-src/actions/          Server Actions (auth, tarefas, perfil)
+src/actions/          Server Actions (auth, tarefas, perfil, admin)
 src/components/       ui (shadcn), layout, auth, dashboard, tasks, profile, shared
-src/components/challenges/   área de prática, dica e os 19 desafios
+src/components/challenges/   catálogo, página de desafio, dica e os componentes
+                             dos desafios (locators/ e assertions/)
 src/lib/              prisma, auth, validações Zod, regras de tarefas, respostas da API
-src/lib/challenges/   catálogo dos desafios (títulos, níveis, objetivos e dicas)
+src/lib/challenges/   textos dos desafios (títulos, níveis, objetivos e dicas)
+src/lib/bugs/         registro central do Modo Bug e leitura da configuração
+src/components/admin/ painel do professor
 src/proxy.ts          protege as rotas da área logada
 ```
 

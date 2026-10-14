@@ -54,3 +54,11 @@ model Task {
 
   @@index([userId, status])
 }
+
+// Configurações globais da aplicação, no formato chave/valor.
+// Hoje guarda só o Modo Bug (chave "bugMode").
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

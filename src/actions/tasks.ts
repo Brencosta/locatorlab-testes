@@ -7,8 +7,15 @@ import {
   validationFailure,
   type ActionResult,
 } from "@/lib/action-result";
+import { isBugActive } from "@/lib/bugs/server";
 import { getCurrentUser } from "@/lib/session";
-import { createTask, deleteTask, updateTask, type TaskResult } from "@/lib/tasks";
+import {
+  createTask,
+  deleteTask,
+  getTask,
+  updateTask,
+  type TaskResult,
+} from "@/lib/tasks";
 import { taskFormSchema } from "@/lib/validations/task";
 
 function revalidateTaskPages() {
@@ -36,7 +43,12 @@ export async function createTaskAction(values: unknown): Promise<ActionResult> {
   try {
     await createTask(user, parsed.data);
     revalidateTaskPages();
-    return { success: true, message: "Tarefa criada com sucesso." };
+    // Modo Bug: mensagem de sucesso com erro de digitação.
+    const typo = await isBugActive("success-typo");
+    return {
+      success: true,
+      message: typo ? "Tarefa criada com suceso." : "Tarefa criada com sucesso.",
+    };
   } catch (error) {
     console.error("[createTaskAction]", error);
     return UNEXPECTED_ERROR;
@@ -54,7 +66,10 @@ export async function updateTaskAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   try {
-    const result = await updateTask(user, id, parsed.data);
+    // Modo Bug: confere a permissão e avisa que salvou, mas não grava nada.
+    const result = (await isBugActive("task-save-not-persisted"))
+      ? await getTask(user, id)
+      : await updateTask(user, id, parsed.data);
     if (!result.ok) return accessFailure(result);
     revalidateTaskPages();
     return { success: true, message: "Tarefa atualizada com sucesso." };
@@ -94,7 +109,9 @@ export async function deleteTaskAction(id: number): Promise<ActionResult> {
   try {
     const result = await deleteTask(user, id);
     if (!result.ok) return accessFailure(result);
-    revalidateTaskPages();
+    // Modo Bug: a tarefa é excluída, mas a lista não é atualizada e a linha
+    // continua na tela até a página ser recarregada.
+    if (!(await isBugActive("deleted-item-stays"))) revalidateTaskPages();
     return { success: true, message: "Tarefa excluída com sucesso." };
   } catch (error) {
     console.error("[deleteTaskAction]", error);

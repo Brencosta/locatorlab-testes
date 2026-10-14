@@ -12,3 +12,13 @@ export const getCurrentUser = cache(async () => {
   if (!session?.user?.id) return null;
   return getUserById(session.user.id);
 });
+
+/**
+ * Usuário logado, somente se for admin; senão, null.
+ * O papel vem do banco, não do cookie: é a checagem de permissão usada pelas
+ * páginas e Server Actions do painel do professor.
+ */
+export async function getCurrentAdmin() {
+  const user = await getCurrentUser();
+  return user?.role === "ADMIN" ? user : null;
+}

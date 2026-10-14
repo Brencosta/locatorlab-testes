@@ -3,18 +3,23 @@ import { cn } from "@/lib/utils";
 // Estilos compartilhados pelos desafios.
 // Os desafios usam HTML puro (e não os componentes de src/components/ui) para
 // que cada um controle exatamente quais atributos existem nos elementos.
+//
+// Os valores padrão de altura, espaçamento e fonte usam [:where(&)], que tem
+// especificidade zero: assim "h-8", "px-0" ou "text-xs" passados por um desafio
+// sempre vencem, sem depender da ordem das classes no CSS gerado.
 export const ui = {
   input:
-    "h-9 w-full min-w-0 rounded-lg border border-input bg-transparent px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
+    "[:where(&)]:h-9 w-full min-w-0 rounded-lg border border-input bg-transparent px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
   button:
-    "inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
+    "inline-flex [:where(&)]:h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg [:where(&)]:px-3 [:where(&)]:text-sm [:where(&)]:font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
   primary: "bg-primary text-primary-foreground hover:bg-primary/85",
   outline: "border border-border bg-background hover:bg-muted",
   danger: "bg-destructive/10 text-destructive hover:bg-destructive/20",
   label: "text-sm font-medium",
   hint: "text-xs text-muted-foreground",
   check: "size-4 shrink-0 accent-primary",
-  tableWrap: "overflow-x-auto rounded-lg border",
+  // relative: mantém dentro da área de rolagem os textos sr-only das células.
+  tableWrap: "relative overflow-x-auto rounded-lg border",
   table: "w-full text-sm",
   th: "bg-muted/50 px-3 py-2 text-left text-xs font-medium tracking-wide whitespace-nowrap text-muted-foreground uppercase",
   td: "border-t px-3 py-2 align-middle",

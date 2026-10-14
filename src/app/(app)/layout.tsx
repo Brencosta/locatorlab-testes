@@ -3,12 +3,17 @@ import { redirect } from "next/navigation";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Topbar } from "@/components/layout/topbar";
 import { Logo } from "@/components/shared/logo";
+import { getBugMode } from "@/lib/bugs/server";
 import { getCurrentUser } from "@/lib/session";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   // O proxy já barra quem não tem cookie; aqui conferimos o usuário no banco.
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  // O aviso de Modo Bug existe só para o admin. Para o aluno, nada é
+  // consultado nem enviado ao navegador.
+  const bugModeIndicator = user.role === "ADMIN" ? await getBugMode() : false;
 
   return (
     <div className="flex min-h-screen flex-1">
@@ -36,12 +41,12 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <SidebarNav role={user.role} />
         </div>
         <p className="border-t px-5 py-3 text-xs text-muted-foreground">
-          Ambiente de prática · Etapa 2
+          Ambiente de prática · Etapa 4
         </p>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
-        <Topbar user={user} />
+        <Topbar user={user} bugModeIndicator={bugModeIndicator} />
         <main id="main-content" className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
