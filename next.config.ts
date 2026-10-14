@@ -1,9 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  experimental: {
+    serverActions: {
+      // Upload de avatar (1 MB) + overhead do multipart.
+      bodySizeLimit: "2mb",
+    },
+  },
   turbopack: {
     rules: {
       "*.css": {
