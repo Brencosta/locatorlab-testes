@@ -34,14 +34,14 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             className="rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             aria-label="LocatorLab - ir para o dashboard"
           >
-            <Logo />
+            <Logo testId="sidebar-logo" />
           </Link>
         </div>
         <div className="flex-1 overflow-y-auto px-3 py-5">
           <SidebarNav role={user.role} />
         </div>
         <p className="border-t px-5 py-3 text-xs text-muted-foreground">
-          Ambiente de prática · Etapa 4
+          Ambiente de prática para automação de testes
         </p>
       </aside>
 

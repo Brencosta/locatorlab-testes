@@ -13,7 +13,6 @@ export type NavItem = {
   label: string;
   icon: LucideIcon;
   testId: string;
-  soon?: boolean;
   adminOnly?: boolean;
 };
 
@@ -62,7 +61,6 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Documentação da API",
         icon: BookOpenText,
         testId: "nav-link-api-docs",
-        soon: true,
       },
       {
         href: "/admin",

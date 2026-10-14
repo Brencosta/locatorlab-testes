@@ -63,7 +63,7 @@ export function NestedElementsChallenge() {
           >
             <div className="node-header">
               <div className="flex items-center gap-2">
-                <h4 className="font-semibold">{department.name}</h4>
+                <h3 className="font-semibold">{department.name}</h3>
                 <span className="text-xs text-muted-foreground">Departamento</span>
               </div>
             </div>
@@ -73,7 +73,7 @@ export function NestedElementsChallenge() {
                   <div key={team.name} className="team rounded-lg border p-3">
                     <div className="node-header">
                       <div className="flex items-center gap-2">
-                        <h5 className="text-sm font-semibold">{team.name}</h5>
+                        <h4 className="text-sm font-semibold">{team.name}</h4>
                         <span className="text-xs text-muted-foreground">
                           Equipe
                         </span>
@@ -87,9 +87,9 @@ export function NestedElementsChallenge() {
                             className="project rounded-lg bg-muted/40 p-2"
                           >
                             <div className="node-header">
-                              <h6 className="text-sm font-medium">
+                              <h5 className="text-sm font-medium">
                                 {project.name}
-                              </h6>
+                              </h5>
                             </div>
                             <div className="node-body">
                               <div className="node-children">

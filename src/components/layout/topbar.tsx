@@ -25,7 +25,7 @@ export function Topbar({
         className="rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:hidden"
         aria-label="LocatorLab - ir para o dashboard"
       >
-        <Logo />
+        <Logo testId="topbar-logo" />
       </Link>
       <div className="ml-auto flex items-center gap-1">
         {bugModeIndicator ? (

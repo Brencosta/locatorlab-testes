@@ -161,7 +161,7 @@ export function ListCountChallenge() {
                 className={`product-stock shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
                   product.inStock
                     ? "bg-success/10 text-success"
-                    : "bg-muted text-muted-foreground"
+                    : "border border-border text-muted-foreground"
                 }`}
               >
                 {product.inStock ? "Em estoque" : "Esgotado"}

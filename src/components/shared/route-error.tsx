@@ -22,6 +22,7 @@ export function RouteError({
   return (
     <ErrorState
       testId="error-state"
+      heading="h1"
       title={title}
       description="Ocorreu um erro inesperado. Verifique sua conexão e tente novamente."
       action={

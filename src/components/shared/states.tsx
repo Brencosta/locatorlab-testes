@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { AlertTriangle, Clock, Inbox, Lock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { AlertTriangle, Inbox, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type StateProps = {
@@ -10,6 +9,11 @@ type StateProps = {
   action?: React.ReactNode;
   testId: string;
   className?: string;
+  /**
+   * Nível do título. Use "h1" quando o estado ocupa a página inteira (404,
+   * acesso negado, erro) e não há outro título principal.
+   */
+  heading?: "h1" | "h2";
 };
 
 function StateBox({
@@ -19,6 +23,7 @@ function StateBox({
   action,
   testId,
   className,
+  heading: Heading = "h2",
   tone = "muted",
   role,
   children,
@@ -49,9 +54,9 @@ function StateBox({
         </div>
       ) : null}
       <div className="space-y-1">
-        <h2 className="text-base font-semibold" data-testid={`${testId}-title`}>
+        <Heading className="text-base font-semibold" data-testid={`${testId}-title`}>
           {title}
-        </h2>
+        </Heading>
         {description ? (
           <p
             className="mx-auto max-w-md text-sm text-muted-foreground"
@@ -92,49 +97,7 @@ export function AccessDenied({
       description={description}
       action={action}
       testId="access-denied"
+      heading="h1"
     />
-  );
-}
-
-/** Página de uma área que chega nas próximas etapas. */
-export function ComingSoon({
-  title,
-  description,
-  icon = Clock,
-  features,
-}: {
-  title: string;
-  description: string;
-  icon?: LucideIcon;
-  features: string[];
-}) {
-  return (
-    <StateBox
-      tone="primary"
-      icon={icon}
-      title={title}
-      description={description}
-      testId="coming-soon"
-      className="py-16"
-    >
-      <Badge variant="secondary" data-testid="coming-soon-badge">
-        Em breve
-      </Badge>
-      <ul
-        className="mt-2 grid gap-2 text-left text-sm text-muted-foreground"
-        aria-label="O que está planejado"
-        data-testid="coming-soon-features"
-      >
-        {features.map((feature) => (
-          <li key={feature} className="flex items-start gap-2">
-            <span
-              aria-hidden="true"
-              className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary"
-            />
-            {feature}
-          </li>
-        ))}
-      </ul>
-    </StateBox>
   );
 }

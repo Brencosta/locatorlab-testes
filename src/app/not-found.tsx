@@ -12,6 +12,7 @@ export default function NotFound() {
       <div className="w-full max-w-lg">
         <EmptyState
           testId="not-found"
+          heading="h1"
           icon={SearchX}
           title="Página não encontrada (404)"
           description="O endereço que você tentou acessar não existe ou foi movido."

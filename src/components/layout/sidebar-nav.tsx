@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { NAV_SECTIONS } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
@@ -55,14 +54,6 @@ export function SidebarNav({
                     >
                       <Icon className="size-4 shrink-0" aria-hidden="true" />
                       <span className="min-w-0 flex-1 leading-tight">{item.label}</span>
-                      {item.soon ? (
-                        <Badge
-                          variant="outline"
-                          className="shrink-0 text-[10px] text-muted-foreground"
-                        >
-                          Em breve
-                        </Badge>
-                      ) : null}
                     </Link>
                   </li>
                 );

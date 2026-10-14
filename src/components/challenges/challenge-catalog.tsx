@@ -71,7 +71,7 @@ export function ChallengeCatalog({
               <span
                 className={cn(
                   "tabular-nums",
-                  active ? "text-primary-foreground/80" : "text-muted-foreground",
+                  active ? "text-primary-foreground" : "text-muted-foreground",
                 )}
               >
                 {count}

@@ -35,7 +35,7 @@ export function MobileNav({ role }: { role: "STUDENT" | "ADMIN" }) {
       <SheetContent side="left" className="w-72 p-0" data-testid="mobile-nav">
         <SheetHeader className="border-b p-4">
           <SheetTitle>
-            <Logo />
+            <Logo testId="mobile-nav-logo" />
           </SheetTitle>
           <SheetDescription className="sr-only">
             Menu de navegação do LocatorLab

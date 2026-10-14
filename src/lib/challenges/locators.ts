@@ -162,9 +162,9 @@ export const LOCATOR_CHALLENGES: LocatorChallenge[] = [
       "Conte quantas tarefas existem no departamento \"Engenharia\" (devem ser 6).",
     ],
     hints: [
-      "Cada nível tem uma classe semântica: `.department`, `.team`, `.project` e `.task`. O nome de cada um fica em um título (`h4`, `h5`, `h6`) ou em `.task-name`.",
+      "Cada nível tem uma classe semântica: `.department`, `.team`, `.project` e `.task`. O nome de cada um fica em um título (`h3`, `h4`, `h5`) ou em `.task-name`.",
       "Em XPath, `contains(@class, \"task\")` também casa com `task-name` e `task-status`; por isso o exemplo abaixo chega na tarefa pelo `li`.",
-      "Encadeie os níveis em XPath: `//section[contains(@class,\"department\")][.//h4[normalize-space()=\"Engenharia\"]]//div[contains(@class,\"team\")][.//h5[normalize-space()=\"Backend\"]]//div[contains(@class,\"project\")][.//h6[normalize-space()=\"Portal\"]]//li[.//span[normalize-space()=\"Revisar contrato\"]]//button`.",
+      "Encadeie os níveis em XPath: `//section[contains(@class,\"department\")][.//h3[normalize-space()=\"Engenharia\"]]//div[contains(@class,\"team\")][.//h4[normalize-space()=\"Backend\"]]//div[contains(@class,\"project\")][.//h5[normalize-space()=\"Portal\"]]//li[.//span[normalize-space()=\"Revisar contrato\"]]//button`.",
       "No Playwright, encadeie filtros: `page.locator(\".department\").filter({ hasText: \"Engenharia\" }).locator(\".team\").filter({ has: page.getByRole(\"heading\", { name: \"Backend\" }) })...`.",
       "Evite XPath absoluto (`/html/body/div[2]/div...`): qualquer mudança no layout quebra o teste.",
     ],
