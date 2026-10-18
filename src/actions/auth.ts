@@ -20,7 +20,10 @@ export async function loginAction(values: unknown): Promise<ActionResult> {
     await signIn("credentials", { ...parsed.data, redirect: false });
     return { success: true, message: "Login realizado com sucesso." };
   } catch (error) {
-    if (error instanceof AuthError) {
+    // Só credencial errada vira "senha incorreta". Outros AuthError (segredo
+    // ausente, host não confiável, JWT inválido) são erro de configuração e
+    // precisam aparecer no log, não se passar por senha errada.
+    if (error instanceof AuthError && error.type === "CredentialsSignin") {
       return { success: false, message: "E-mail ou senha incorretos." };
     }
     console.error("[loginAction]", error);
