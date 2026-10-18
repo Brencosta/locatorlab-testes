@@ -8,7 +8,7 @@ import {
 } from "@/lib/action-result";
 import { setBugMode } from "@/lib/bugs/server";
 import { prisma } from "@/lib/prisma";
-import { resetDatabase } from "@/lib/seed-data";
+import { resetDatabase, SeedConfigError } from "@/lib/seed-data";
 import { getCurrentAdmin } from "@/lib/session";
 
 // Ações do painel do professor. Toda ação confere a permissão aqui, no
@@ -47,6 +47,9 @@ export async function resetDatabaseAction(): Promise<ActionResult> {
       message: `Banco restaurado: ${counts.users} usuários e ${counts.tasks} tarefas.`,
     };
   } catch (error) {
+    if (error instanceof SeedConfigError) {
+      return { success: false, message: error.message };
+    }
     console.error("[resetDatabaseAction]", error);
     return UNEXPECTED_ERROR;
   }

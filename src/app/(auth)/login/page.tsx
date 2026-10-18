@@ -59,10 +59,6 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <dd className="font-mono text-xs break-all">
             aluno@locatorlab.dev / Aluno@123
           </dd>
-          <dt>Admin</dt>
-          <dd className="font-mono text-xs break-all">
-            admin@locatorlab.dev / Admin@123
-          </dd>
         </dl>
       </section>
     </FadeIn>

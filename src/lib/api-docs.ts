@@ -72,6 +72,7 @@ export const API_ERROR_CODES: Array<{
   { code: "FORBIDDEN", status: 403, description: "Autenticado, mas sem permissão para o recurso." },
   { code: "NOT_FOUND", status: 404, description: "O recurso não existe." },
   { code: "RESET_NOT_CONFIGURED", status: 500, description: "A variável RESET_KEY não foi definida no servidor." },
+  { code: "ADMIN_PASSWORD_NOT_CONFIGURED", status: 500, description: "A variável ADMIN_PASSWORD está ausente ou tem menos de 8 caracteres; o reset não apaga nada." },
   { code: "INTERNAL_ERROR", status: 500, description: "Erro inesperado no servidor." },
   { code: "SERVICE_UNAVAILABLE", status: 503, description: "A aplicação não conseguiu acessar o banco de dados." },
 ];
@@ -492,7 +493,7 @@ export const API_GROUPS: ApiGroup[] = [
         statuses: [
           { code: 200, description: "Banco restaurado." },
           { code: 401, description: "Chave ausente ou incorreta." },
-          { code: 500, description: "RESET_KEY não configurada no servidor." },
+          { code: 500, description: "RESET_KEY ou ADMIN_PASSWORD não configurada no servidor." },
         ],
       },
       {

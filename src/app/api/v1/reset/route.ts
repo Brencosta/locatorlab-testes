@@ -2,7 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { fail, ok, unauthorized, withApi } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
-import { resetDatabase } from "@/lib/seed-data";
+import { adminPasswordProblem, resetDatabase } from "@/lib/seed-data";
 
 // Comparação em tempo constante (não vaza o tamanho nem o conteúdo da chave).
 function keysMatch(provided: string, expected: string) {
@@ -26,6 +26,13 @@ export const POST = withApi(async (request) => {
   const provided = request.headers.get("x-reset-key");
   if (!provided || !keysMatch(provided, expected)) {
     return unauthorized("Chave de reset inválida ou ausente (header x-reset-key).");
+  }
+
+  // Confere antes de apagar qualquer coisa: sem senha de admin válida, o banco
+  // ficaria sem como entrar no painel.
+  const passwordProblem = adminPasswordProblem();
+  if (passwordProblem) {
+    return fail(500, "ADMIN_PASSWORD_NOT_CONFIGURED", passwordProblem);
   }
 
   const counts = await resetDatabase(prisma);

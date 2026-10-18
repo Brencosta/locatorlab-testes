@@ -57,10 +57,15 @@ Framer Motion e Zod com react-hook-form.
 
 ## Credenciais de teste
 
-| Papel | E-mail                 | Senha       |
-| ----- | ---------------------- | ----------- |
-| Aluno | `aluno@locatorlab.dev` | `Aluno@123` |
-| Admin | `admin@locatorlab.dev` | `Admin@123` |
+| Papel | E-mail                 | Senha                                         |
+| ----- | ---------------------- | --------------------------------------------- |
+| Aluno | `aluno@locatorlab.dev` | `Aluno@123`                                   |
+| Admin | `admin@locatorlab.dev` | definida pelo professor em `ADMIN_PASSWORD`   |
+
+A conta de aluno é pública de propósito: é a que os alunos usam nas aulas. A
+senha do admin **não fica no código nem na documentação**. Ela vem da variável de
+ambiente `ADMIN_PASSWORD` e é aplicada à conta `admin@locatorlab.dev` a cada
+reset do banco. Para trocar a senha do admin, altere a variável e rode o reset.
 
 O seed cria sempre os mesmos dados: 2 usuários e 30 tarefas (24 do aluno, ids 1
 a 24; 6 do admin, ids 25 a 30). O aluno vê só as próprias tarefas; o admin vê e
@@ -89,7 +94,8 @@ npm run db:seed
 npm run dev
 ```
 
-Acesse <http://localhost:3000> e entre com uma das credenciais de teste.
+Acesse <http://localhost:3000> e entre com a conta de aluno ou com
+`admin@locatorlab.dev` e a senha que você colocou em `ADMIN_PASSWORD`.
 
 ### Variáveis de ambiente
 
@@ -99,6 +105,10 @@ Acesse <http://localhost:3000> e entre com uma das credenciais de teste.
 | `DIRECT_URL`   | Conexão **direta**, usada pelo Prisma nas migrations                  |
 | `AUTH_SECRET`  | Segredo dos cookies de sessão e dos tokens da API (`npx auth secret`) |
 | `RESET_KEY`    | Chave do endpoint de reset (`openssl rand -hex 24`)                   |
+| `ADMIN_PASSWORD` | Senha da conta admin, mínimo de 8 caracteres (`openssl rand -base64 18`) |
+
+Sem `ADMIN_PASSWORD`, o seed e o reset não rodam (e não apagam nada): a
+mensagem de erro indica a variável que falta.
 
 No Neon, as duas URLs ficam em **Connect**: com "Connection pooling" ligado é a
 `DATABASE_URL` (host com `-pooler`); desligado é a `DIRECT_URL`. Com um
@@ -161,6 +171,17 @@ Antes de clicar em Deploy, em **Environment Variables**, adicione:
 | `DIRECT_URL`   | connection string direta               |
 | `AUTH_SECRET`  | resultado de `openssl rand -base64 32` |
 | `RESET_KEY`    | resultado de `openssl rand -hex 24`    |
+| `ADMIN_PASSWORD` | senha do admin, com pelo menos 8 caracteres (ex.: `openssl rand -base64 18`) |
+
+Os valores de `AUTH_SECRET`, `RESET_KEY` e `ADMIN_PASSWORD` ficam só na Vercel.
+Gere valores novos para cada ambiente e nunca os coloque no repositório, no
+README ou em mensagens para os alunos. A `RESET_KEY` só deve ser compartilhada
+com quem precisa restaurar o banco.
+
+Com Prisma Postgres (integração do Vercel Marketplace), a integração cadastra a
+`DATABASE_URL` sozinha. Cadastre a `DIRECT_URL` com a connection string direta
+(`postgres://...`) copiada do Console do Prisma, em **Connect**; se houver uma só
+string `postgres://`, use a mesma nas duas. Não use URLs `prisma+postgres://`.
 
 ### 5. Primeiro deploy e dados iniciais
 
@@ -169,10 +190,15 @@ Antes de clicar em Deploy, em **Environment Variables**, adicione:
 
 ```bash
 curl -X POST https://SEU-PROJETO.vercel.app/api/v1/reset \
-  -H "x-reset-key: SUA_RESET_KEY"
+  -H "x-reset-key: $RESET_KEY"
 ```
 
-3. Acesse o site e entre com as credenciais de teste.
+   Antes, defina `RESET_KEY` no terminal com o valor cadastrado na Vercel
+   (`export RESET_KEY="..."`), para a chave não ficar no histórico de comandos
+   copiados.
+
+3. Acesse o site com a conta de aluno ou com o admin e a senha de
+   `ADMIN_PASSWORD`.
 
 A partir daí, cada `git push` na `main` gera um novo deploy e aplica as
 migrations novas automaticamente.
@@ -195,8 +221,14 @@ Há três formas de restaurar:
 curl -X POST http://localhost:3000/api/v1/reset -H "x-reset-key: $RESET_KEY"
 ```
 
-Respostas da API: `200` (restaurado), `401` (chave ausente ou errada) e `500` (a
-variável `RESET_KEY` não foi configurada no servidor).
+Respostas da API: `200` (restaurado), `401` (chave ausente ou errada) e `500`
+(`RESET_NOT_CONFIGURED` se falta a `RESET_KEY`, ou `ADMIN_PASSWORD_NOT_CONFIGURED`
+se a `ADMIN_PASSWORD` está ausente ou curta; nesse caso nada é apagado).
+
+A chave de reset é configurada pelo professor na variável `RESET_KEY` (na Vercel,
+em **Settings › Environment Variables**). Nas suítes dos alunos, passe a chave
+por variável de ambiente do framework, como nos exemplos abaixo, e não a escreva
+no código do teste.
 
 O reset **não altera o Modo Bug**. Assim, uma suíte que chama o reset no começo
 não desliga o modo que o professor acabou de ligar.

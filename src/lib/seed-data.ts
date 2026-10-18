@@ -10,24 +10,46 @@ type SeedPriority = "LOW" | "MEDIUM" | "HIGH";
 export const SEED_STUDENT_ID = "seed_user_aluno";
 export const SEED_ADMIN_ID = "seed_user_admin";
 
-export const SEED_CREDENTIALS = [
-  {
-    id: SEED_STUDENT_ID,
-    role: "STUDENT",
-    name: "Aluno Teste",
-    email: "aluno@locatorlab.dev",
-    password: "Aluno@123",
-    bio: "Estudante de automação de testes praticando localizadores e assertions.",
-  },
-  {
-    id: SEED_ADMIN_ID,
-    role: "ADMIN",
-    name: "Admin LocatorLab",
-    email: "admin@locatorlab.dev",
-    password: "Admin@123",
-    bio: "Professor responsável pelo ambiente de prática.",
-  },
-] as const;
+/** Conta de aluno: pública de propósito, documentada para as aulas. */
+export const SEED_STUDENT = {
+  id: SEED_STUDENT_ID,
+  role: "STUDENT",
+  name: "Aluno Teste",
+  email: "aluno@locatorlab.dev",
+  password: "Aluno@123",
+  bio: "Estudante de automação de testes praticando localizadores e assertions.",
+} as const;
+
+/**
+ * Conta de admin. A senha NÃO fica no código: vem da variável de ambiente
+ * ADMIN_PASSWORD, lida a cada reset.
+ */
+export const SEED_ADMIN = {
+  id: SEED_ADMIN_ID,
+  role: "ADMIN",
+  name: "Admin LocatorLab",
+  email: "admin@locatorlab.dev",
+  bio: "Professor responsável pelo ambiente de prática.",
+} as const;
+
+export const ADMIN_PASSWORD_MIN_LENGTH = 8;
+
+/** Por que ADMIN_PASSWORD não pode ser usada, ou null se estiver tudo certo. */
+export function adminPasswordProblem(): string | null {
+  const password = process.env.ADMIN_PASSWORD;
+  if (!password) {
+    return "A variável de ambiente ADMIN_PASSWORD não está configurada.";
+  }
+  if (password.length < ADMIN_PASSWORD_MIN_LENGTH) {
+    return `A variável ADMIN_PASSWORD deve ter pelo menos ${ADMIN_PASSWORD_MIN_LENGTH} caracteres.`;
+  }
+  return null;
+}
+
+/** Erro de configuração do seed (não é falha do banco). */
+export class SeedConfigError extends Error {
+  readonly code = "ADMIN_PASSWORD_NOT_CONFIGURED";
+}
 
 // Datas fixas: o seed gera sempre exatamente os mesmos registros.
 const BASE_DATE = Date.UTC(2025, 0, 6, 12, 0, 0);
@@ -98,9 +120,12 @@ function buildTasks(): Prisma.TaskCreateManyInput[] {
   });
 }
 
-function buildUsers(): Prisma.UserCreateManyInput[] {
+function buildUsers(adminPassword: string): Prisma.UserCreateManyInput[] {
   const createdAt = new Date(BASE_DATE - DAY);
-  return SEED_CREDENTIALS.map((user) => ({
+  return [
+    { ...SEED_STUDENT, password: SEED_STUDENT.password },
+    { ...SEED_ADMIN, password: adminPassword },
+  ].map((user) => ({
     id: user.id,
     name: user.name,
     email: user.email,
@@ -119,9 +144,15 @@ function buildUsers(): Prisma.UserCreateManyInput[] {
  * A tabela Setting (Modo Bug) fica de fora de propósito: as suítes dos alunos
  * costumam chamar o reset antes de cada execução, e isso não pode desligar o
  * Modo Bug que o professor acabou de ligar.
+ *
+ * Lança SeedConfigError, sem apagar nada, se ADMIN_PASSWORD estiver ausente
+ * ou curta demais.
  */
 export async function resetDatabase(prisma: PrismaClient) {
-  const users = buildUsers();
+  const problem = adminPasswordProblem();
+  if (problem) throw new SeedConfigError(problem);
+
+  const users = buildUsers(process.env.ADMIN_PASSWORD as string);
   const tasks = buildTasks();
 
   await prisma.$transaction([
